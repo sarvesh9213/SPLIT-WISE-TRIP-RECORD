@@ -37,8 +37,15 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
   const calculateBalances = (): Balance[] => {
     const balances: Record<string, Balance> = {};
     
-    // Initialize balances
-    participants.forEach(person => {
+    // Get all unique participants from both participants array and expenses
+    const allParticipants = new Set([
+      ...participants,
+      ...expenses.map(e => e.paidBy),
+      ...expenses.flatMap(e => e.splitBetween)
+    ]);
+    
+    // Initialize balances for all participants
+    allParticipants.forEach(person => {
       balances[person] = {
         person,
         balance: 0,
@@ -52,11 +59,15 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
       const sharePerPerson = expense.amount / expense.splitBetween.length;
       
       // Person who paid gets credited
-      balances[expense.paidBy].balance += expense.amount;
+      if (balances[expense.paidBy]) {
+        balances[expense.paidBy].balance += expense.amount;
+      }
       
       // Everyone in the split gets debited their share
       expense.splitBetween.forEach(person => {
-        balances[person].balance -= sharePerPerson;
+        if (balances[person]) {
+          balances[person].balance -= sharePerPerson;
+        }
       });
     });
 
