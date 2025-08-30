@@ -1,73 +1,117 @@
-# Welcome to your Lovable project
+🌍 TripSplit – Redefining Group Travel
+❓ The Problem
 
-## Project info
+Planning a trip with friends or family sounds exciting — until the details pile up. Someone has to manage the itinerary, someone else has to keep track of who owes money, and in the end, you’re switching between different apps (Google Docs, WhatsApp, Splitwise, spreadsheets, etc.). This creates confusion, arguments, and wasted time.
 
-**URL**: https://lovable.dev/projects/ccd21571-33e3-4772-ab2f-eb9b8e66f001
+Existing apps either:
 
-## How can I edit this code?
+Only help in planning itineraries (like Google Trips, Wanderlog), or
 
-There are several ways of editing your application.
+Only handle expense splitting (like Splitwise).
 
-**Use Lovable**
+But no platform in the world has ever combined these two — trip planning + expense management together in one single ecosystem.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ccd21571-33e3-4772-ab2f-eb9b8e66f001) and start prompting.
+💡 Our Solution – TripSplit
 
-Changes made via Lovable will be committed automatically to this repo.
+We built TripSplit to solve this exact problem. TripSplit is a one-of-a-kind travel companion app where you can:
 
-**Use your preferred IDE**
+Plan your trip (day-by-day itineraries, flights, hotels, activities).
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Split expenses in real-time with all participants.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Track balances transparently and even send payment requests.
 
-Follow these steps:
+Collaborate with your group — everything is shared, editable, and simple.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+With TripSplit, your trip is not just planned — it’s organized, fair, and stress-free.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+⚙️ How It Works
 
-# Step 3: Install the necessary dependencies.
-npm i
+Signup & Participants: Each user signs in with their email. Trips are created and participants are added. Their emails are linked automatically from our database.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Itinerary Planning:
 
-**Edit a file directly in GitHub**
+Add flights, hotel check-ins, activities, and more.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Each activity is editable — details like time, notes, or changes can be added easily.
 
-**Use GitHub Codespaces**
+A delete option exists for everything (flight, arrival, hotel check-in, activities).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Add multiple days using the “Add Day” button. Each day creates its own structured itinerary.
 
-## What technologies are used for this project?
+Expense Splitting:
 
-This project is built with:
+Add expenses during or after the trip (e.g., hotel ₹10,000 split between 4 people).
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Balances are updated automatically for everyone.
 
-## How can I deploy this project?
+Currency is flexible — users can select INR, USD, EUR, etc., and all balances reflect the chosen currency.
 
-Simply open [Lovable](https://lovable.dev/projects/ccd21571-33e3-4772-ab2f-eb9b8e66f001) and click on Share -> Publish.
+You can send payment requests to participants directly via email (e.g., request to Saurav Kumar goes directly to his registered email).
 
-## Can I connect a custom domain to my Lovable project?
+Transparency: Every participant sees:
 
-Yes, you can!
+Their total owed
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Their total paid
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Their balance remaining.
+
+🔑 Features (Current + Planned)
+
+✅ Currency selection (₹, $, €, etc.)
+✅ Editable & deletable itinerary items
+✅ Add/Delete days dynamically
+✅ Expense splitting with automatic balance calculation
+✅ Email request integration (via Supabase + Resend API)
+✅ Transparent balance sheet for every participant
+
+🛠️ Upcoming:
+
+Real-time collaboration (like Google Docs for trips)
+
+Mobile notifications for expense updates
+
+AI-powered trip recommendations
+
+🎯 Why We Made It
+
+We (Sarvesh Pandey & Saurav Kumar) have personally faced this problem during trips with friends. We always had:
+
+One WhatsApp group for discussions
+
+One Excel sheet or Google Doc for budget
+
+Splitwise app for money tracking
+
+Random notes for itineraries
+
+This was messy, inefficient, and frustrating. That’s when we asked:
+
+👉 Why hasn’t anyone combined trip planning and expense splitting into one?
+
+That question became TripSplit.
+
+🚀 Why TripSplit is Unique
+
+First in the World: No existing platform unites trip planning with group expense management in one place.
+
+Built for Real Travelers: Every feature comes from real pain points we faced ourselves.
+
+Simple but Powerful: The app is easy for casual travelers but powerful enough for detailed planners.
+
+TripSplit isn’t just another travel app. It’s the world’s first truly collaborative trip planner + Splitwise alternative combined.
+
+🏆 Impact
+
+TripSplit makes group travel:
+
+Simpler – one app for everything.
+
+Fairer – no confusion about money.
+
+More fun – focus on experiences, not arguments.
+
+Whether you’re planning a weekend getaway or a month-long international trip, TripSplit ensures everyone stays on the same page — literally.
+
+✨ In short: TripSplit is the future of group travel. Plan smart, split fair, and travel stress-free — all in one app.
