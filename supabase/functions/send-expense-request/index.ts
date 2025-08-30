@@ -44,11 +44,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     // If no email found in participants, look for user by name in profiles
     if (!recipientEmail) {
-      // Try to find a registered user with matching name
-      const { data: profiles } = await supabase
+      console.log(`Looking for registered user with name: ${debtorName}`);
+      
+      // Try multiple search strategies for better name matching
+      const nameParts = debtorName.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+      
+      // Search for exact name match first
+      let { data: profiles } = await supabase
         .from('profiles')
         .select('email, first_name, last_name')
-        .or(`first_name.ilike.%${debtorName}%,last_name.ilike.%${debtorName}%`);
+        .or(`and(first_name.ilike.${firstName},last_name.ilike.${lastName})`);
+
+      // If no exact match, try partial matching
+      if (!profiles || profiles.length === 0) {
+        ({ data: profiles } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .or(`first_name.ilike.%${firstName}%,last_name.ilike.%${lastName}%,first_name.ilike.%${debtorName}%,last_name.ilike.%${debtorName}%`));
+      }
+
+      console.log(`Found ${profiles?.length || 0} potential matches in profiles table`);
 
       if (profiles && profiles.length > 0) {
         // Find the best match - exact name match or closest match
@@ -59,9 +76,11 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (exactMatch) {
           recipientEmail = exactMatch.email;
+          console.log(`Found exact match: ${exactMatch.email}`);
         } else {
           // Use first partial match if no exact match
           recipientEmail = profiles[0].email;
+          console.log(`Using partial match: ${profiles[0].email}`);
         }
       }
     }
