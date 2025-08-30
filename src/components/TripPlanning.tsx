@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Bed, Camera, Plus, Clock, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, MapPin, Bed, Camera, Plus, Clock, Trash2, Edit3 } from 'lucide-react';
 import { getCurrencySymbol } from '@/lib/currency';
 
 interface Trip {
@@ -153,19 +158,23 @@ const getActivityColor = (type: Activity['type']) => {
 export const TripPlanning = ({ trip }: TripPlanningProps) => {
   const [itinerary, setItinerary] = useState(mockItinerary);
   const [accommodations] = useState(mockAccommodations);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editingDayId, setEditingDayId] = useState<string>('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const totalDays = Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
   const currencySymbol = getCurrencySymbol(trip.currency);
 
-  const addActivity = (dayId: string) => {
-    // Mock adding activity - in real app, this would open a dialog
+  const addActivity = (dayId: string, activityData?: Partial<Activity>) => {
     const newActivity: Activity = {
       id: `activity-${Date.now()}`,
-      time: '12:00',
-      title: 'New Activity',
-      location: 'To be determined',
-      type: 'activity',
-      description: 'Click to edit details'
+      time: activityData?.time || '12:00',
+      title: activityData?.title || 'New Activity',
+      location: activityData?.location || 'To be determined',
+      type: activityData?.type || 'activity',
+      description: activityData?.description || '',
+      estimatedCost: activityData?.estimatedCost
     };
     
     setItinerary(prev => prev.map(day => 
@@ -173,6 +182,52 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
         ? { ...day, activities: [...day.activities, newActivity] }
         : day
     ));
+  };
+
+  const updateActivity = (dayId: string, activityId: string, updatedActivity: Partial<Activity>) => {
+    setItinerary(prev => prev.map(day => 
+      day.id === dayId 
+        ? { 
+            ...day, 
+            activities: day.activities.map(activity => 
+              activity.id === activityId 
+                ? { ...activity, ...updatedActivity }
+                : activity
+            )
+          }
+        : day
+    ));
+  };
+
+  const openEditDialog = (dayId: string, activity: Activity) => {
+    setEditingDayId(dayId);
+    setEditingActivity(activity);
+    setIsEditDialogOpen(true);
+  };
+
+  const openAddDialog = (dayId: string) => {
+    setEditingDayId(dayId);
+    setEditingActivity({
+      id: '',
+      time: '12:00',
+      title: '',
+      location: '',
+      type: 'activity',
+      description: ''
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSaveActivity = (activityData: Activity) => {
+    if (isAddDialogOpen) {
+      addActivity(editingDayId, activityData);
+      setIsAddDialogOpen(false);
+    } else {
+      updateActivity(editingDayId, activityData.id, activityData);
+      setIsEditDialogOpen(false);
+    }
+    setEditingActivity(null);
+    setEditingDayId('');
   };
 
   const removeActivity = (dayId: string, activityId: string) => {
@@ -249,7 +304,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                       day: 'numeric' 
                     })}</p>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => addActivity(day.id)}>
+                  <Button size="sm" variant="outline" onClick={() => openAddDialog(day.id)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Activity
                   </Button>
@@ -257,7 +312,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
 
                 <div className="space-y-3">
                   {day.activities.map((activity, index) => (
-                    <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border border-border hover:shadow-soft transition-shadow">
+                    <div key={activity.id} className="group flex items-start gap-4 p-4 rounded-lg border border-border hover:shadow-soft transition-shadow">
                       <div className="flex items-center gap-2 min-w-0">
                         <Badge className={`${getActivityColor(activity.type)} text-lg px-2 py-1`}>
                           {getActivityIcon(activity.type)}
@@ -268,8 +323,11 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                         </div>
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold mb-1">{activity.title}</h4>
+                      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => openEditDialog(day.id, activity)}>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2">
+                          {activity.title}
+                          <Edit3 className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </h4>
                         <p className="text-sm text-muted-foreground mb-1 flex items-center">
                           <MapPin className="w-3 h-3 mr-1" />
                           {activity.location}
@@ -289,8 +347,22 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                         <Button 
                           size="sm" 
                           variant="ghost" 
+                          className="text-muted-foreground hover:text-primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditDialog(day.id, activity);
+                          }}
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
                           className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => removeActivity(day.id, activity.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeActivity(day.id, activity.id);
+                          }}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -303,7 +375,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No activities planned for this day</p>
-                    <Button size="sm" className="mt-2" variant="outline" onClick={() => addActivity(day.id)}>
+                    <Button size="sm" className="mt-2" variant="outline" onClick={() => openAddDialog(day.id)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Plan Activities
                     </Button>
@@ -396,6 +468,162 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Activity Edit/Add Dialog */}
+      <ActivityDialog
+        isOpen={isAddDialogOpen || isEditDialogOpen}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          setIsEditDialogOpen(false);
+          setEditingActivity(null);
+          setEditingDayId('');
+        }}
+        activity={editingActivity}
+        onSave={handleSaveActivity}
+        isEditing={isEditDialogOpen}
+        currencySymbol={currencySymbol}
+      />
     </div>
+  );
+};
+
+// Activity Dialog Component
+interface ActivityDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  activity: Activity | null;
+  onSave: (activity: Activity) => void;
+  isEditing: boolean;
+  currencySymbol: string;
+}
+
+const ActivityDialog = ({ isOpen, onClose, activity, onSave, isEditing, currencySymbol }: ActivityDialogProps) => {
+  const [formData, setFormData] = useState<Activity>({
+    id: '',
+    time: '12:00',
+    title: '',
+    location: '',
+    type: 'activity',
+    description: ''
+  });
+
+  // Update form data when activity changes
+  useEffect(() => {
+    if (activity) {
+      setFormData(activity);
+    }
+  }, [activity]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.location.trim()) return;
+    
+    onSave({
+      ...formData,
+      id: isEditing ? formData.id : `activity-${Date.now()}`
+    });
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? 'Edit Activity' : 'Add New Activity'}</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="time">Time</Label>
+              <Input
+                id="time"
+                type="time"
+                value={formData.time}
+                onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select value={formData.type} onValueChange={(value: Activity['type']) => setFormData(prev => ({ ...prev, type: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="activity">🎯 Activity</SelectItem>
+                  <SelectItem value="transport">✈️ Transport</SelectItem>
+                  <SelectItem value="accommodation">🏨 Accommodation</SelectItem>
+                  <SelectItem value="meal">🍽️ Meal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="Enter activity title"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={formData.location}
+              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+              placeholder="Enter location"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              value={formData.description || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Add any additional details"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="cost">Estimated Cost (Optional)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                {currencySymbol}
+              </span>
+              <Input
+                id="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.estimatedCost || ''}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  estimatedCost: e.target.value ? parseFloat(e.target.value) : undefined 
+                }))}
+                placeholder="0.00"
+                className="pl-8"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              {isEditing ? 'Update Activity' : 'Add Activity'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
