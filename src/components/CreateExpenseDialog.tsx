@@ -11,12 +11,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Check } from 'lucide-react';
 import { format } from 'date-fns';
+import { getCurrencySymbol } from '@/lib/currency';
 
 interface CreateExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tripId?: string;
   participants: string[];
+  currency?: string;
   onAddExpense: (expense: {
     tripId: string;
     title: string;
@@ -47,6 +49,7 @@ export const CreateExpenseDialog = ({
   onOpenChange, 
   tripId, 
   participants, 
+  currency = 'USD',
   onAddExpense 
 }: CreateExpenseDialogProps) => {
   const [title, setTitle] = useState('');
@@ -105,6 +108,7 @@ export const CreateExpenseDialog = ({
   };
 
   const amountPerPerson = splitBetween.length > 0 ? parseFloat(amount || '0') / splitBetween.length : 0;
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -130,7 +134,7 @@ export const CreateExpenseDialog = ({
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">{currencySymbol}</span>
               <Input
                 id="amount"
                 type="number"
@@ -144,7 +148,7 @@ export const CreateExpenseDialog = ({
             </div>
             {splitBetween.length > 0 && amount && (
               <p className="text-sm text-muted-foreground">
-                ${amountPerPerson.toFixed(2)} per person ({splitBetween.length} people)
+                {currencySymbol}{amountPerPerson.toFixed(2)} per person ({splitBetween.length} people)
               </p>
             )}
           </div>
@@ -235,11 +239,11 @@ export const CreateExpenseDialog = ({
                       {participant}
                     </Label>
                   </div>
-                  {splitBetween.includes(participant) && amount && (
-                    <span className="text-sm text-muted-foreground ml-auto">
-                      ${amountPerPerson.toFixed(2)}
-                    </span>
-                  )}
+                   {splitBetween.includes(participant) && amount && (
+                     <span className="text-sm text-muted-foreground ml-auto">
+                       {currencySymbol}{amountPerPerson.toFixed(2)}
+                     </span>
+                   )}
                 </div>
               ))}
             </div>

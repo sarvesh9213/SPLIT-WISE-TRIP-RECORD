@@ -300,6 +300,7 @@ export const TripDashboard = () => {
         onOpenChange={setShowCreateExpense}
         tripId={selectedTrip?.id}
         participants={participantNames}
+        currency={selectedTrip?.currency}
         onAddExpense={handleAddExpense}
       />
 
