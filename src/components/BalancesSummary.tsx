@@ -118,6 +118,23 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD', trip
 
   const sendPaymentRequest = async (debtorName: string, creditorName: string, amount: number) => {
     try {
+      // Find the debtor's email from participants
+      const participants = await supabase
+        .from('participants')
+        .select('email')
+        .eq('trip_id', tripId)
+        .eq('name', debtorName)
+        .single();
+
+      if (!participants.data?.email) {
+        toast({
+          title: "No email found",
+          description: `No email address found for ${debtorName}. Please add their email to send requests.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Sending request...",
         description: "Please wait while we send the payment request email.",
@@ -125,12 +142,10 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD', trip
 
       const { data, error } = await supabase.functions.invoke('send-expense-request', {
         body: {
-          tripId,
+          recipientEmail: participants.data.email,
           tripName: tripName || 'Trip',
-          currency,
-          debtorName,
-          creditorName,
-          amount
+          amount: `${currencySymbol}${amount.toFixed(2)}`,
+          fromUser: creditorName
         }
       });
 
