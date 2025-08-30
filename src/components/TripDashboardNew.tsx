@@ -255,7 +255,13 @@ export const TripDashboard = () => {
                   </TabsContent>
 
                   <TabsContent value="balances" className="animate-slide-up">
-                    <BalancesSummary expenses={formattedExpenses} participants={participantNames} currency={selectedTrip.currency} />
+                    <BalancesSummary 
+                      expenses={formattedExpenses} 
+                      participants={participantNames} 
+                      currency={selectedTrip.currency}
+                      tripId={selectedTrip.id}
+                      tripName={selectedTrip.name}
+                    />
                   </TabsContent>
 
                   <TabsContent value="planning" className="animate-slide-up">

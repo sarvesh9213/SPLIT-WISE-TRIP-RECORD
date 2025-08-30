@@ -4,6 +4,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowUpRight, ArrowDownLeft, CheckCircle } from 'lucide-react';
 import { getCurrencySymbol } from '@/lib/currency';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Expense {
   id: string;
@@ -21,6 +23,8 @@ interface BalancesSummaryProps {
   expenses: Expense[];
   participants: string[];
   currency?: string;
+  tripId?: string;
+  tripName?: string;
 }
 
 interface Balance {
@@ -44,7 +48,7 @@ const generateWhatsAppLink = (debtor: string, creditor: string, amount: number, 
   window.open(whatsappUrl, '_blank');
 };
 
-export const BalancesSummary = ({ expenses, participants, currency = 'USD' }: BalancesSummaryProps) => {
+export const BalancesSummary = ({ expenses, participants, currency = 'USD', tripId, tripName }: BalancesSummaryProps) => {
   // Calculate balances
   const calculateBalances = (): Balance[] => {
     const balances: Record<string, Balance> = {};
@@ -110,6 +114,50 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD' }: Ba
   const balances = calculateBalances();
   const totalOwed = balances.reduce((sum, balance) => sum + Math.max(0, -balance.balance), 0);
   const currencySymbol = getCurrencySymbol(currency);
+  const { toast } = useToast();
+
+  const sendPaymentRequest = async (debtorName: string, creditorName: string, amount: number) => {
+    try {
+      toast({
+        title: "Sending request...",
+        description: "Please wait while we send the payment request email.",
+      });
+
+      const { data, error } = await supabase.functions.invoke('send-expense-request', {
+        body: {
+          tripId,
+          tripName: tripName || 'Trip',
+          currency,
+          debtorName,
+          creditorName,
+          amount
+        }
+      });
+
+      if (error) {
+        console.error('Error sending payment request:', error);
+        toast({
+          title: "Failed to send request",
+          description: error.message || "Could not send payment request email.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Request sent!",
+        description: `Payment request email sent to ${debtorName}`,
+      });
+
+    } catch (error: any) {
+      console.error('Error sending payment request:', error);
+      toast({
+        title: "Failed to send request", 
+        description: "Could not send payment request email.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -185,7 +233,7 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD' }: Ba
                       <Button 
                         size="sm" 
                         className="h-6 text-xs bg-gradient-primary"
-                        onClick={() => generateWhatsAppLink(balance.person, debt.to, debt.amount, currency)}
+                        onClick={() => sendPaymentRequest(balance.person, debt.to, debt.amount)}
                       >
                         Request
                       </Button>
