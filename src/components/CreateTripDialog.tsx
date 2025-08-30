@@ -115,7 +115,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
             <Label htmlFor="tripName">Trip Name</Label>
             <Input
               id="tripName"
-              placeholder="e.g., Bali Adventure"
+              placeholder="Create your Happy Journey."
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -127,7 +127,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
             <Label htmlFor="destination">Destination</Label>
             <Input
               id="destination"
-              placeholder="e.g., Bali, Indonesia"
+              placeholder="Select your Happy Place."
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               required
@@ -224,6 +224,9 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
           {/* Participants */}
           <div className="space-y-2">
             <Label>Trip Participants</Label>
+            <p className="text-sm text-muted-foreground">
+              Add participant name & also their email address, on which I will be sending the messages so that the particular person will get the emails that he has to pay the remaining balance on time.
+            </p>
             
             {/* Current Participants */}
             <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -256,22 +259,28 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
             </div>
 
             {/* Add New Participant */}
-            <div className="flex gap-2">
+            <div className="space-y-2">
               <Input
-                placeholder="Add participant name..."
+                placeholder="Participant name (e.g., John Doe)"
                 value={newParticipant}
                 onChange={(e) => setNewParticipant(e.target.value)}
                 onKeyPress={handleParticipantKeyPress}
-                className="flex-1"
               />
-              <Button
-                type="button"
-                onClick={addParticipant}
-                disabled={!newParticipant.trim() || participants.includes(newParticipant.trim())}
-                className="bg-gradient-primary"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Email address (e.g., john@example.com)"
+                  type="email"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={addParticipant}
+                  disabled={!newParticipant.trim() || participants.includes(newParticipant.trim())}
+                  className="bg-gradient-primary"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
             
             <p className="text-sm text-muted-foreground">
