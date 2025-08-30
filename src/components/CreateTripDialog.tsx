@@ -227,8 +227,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
           {/* Participants */}
           <div className="space-y-2">
             <Label>Trip Participants</Label>
-            <p className="text-sm text-muted-foreground">
-              Add participant name & also their email address, on which I will be sending the messages so that the particular person will get the emails that he has to pay the remaining balance on time.
+            <p className="text-sm text-muted-foreground"
             </p>
             
             {/* Current Participants */}
