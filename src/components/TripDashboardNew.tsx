@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Users, DollarSign, Calendar, MapPin, Plane } from 'lucide-react';
+import { getCurrencySymbol } from '@/lib/currency';
 import { ExpenseList } from './ExpenseList';
 import { TripPlanning } from './TripPlanning';
 import { BalancesSummary } from './BalancesSummary';
@@ -222,8 +223,7 @@ export const TripDashboard = () => {
                     <div className="bg-white/50 rounded-lg p-4 text-center">
                       <DollarSign className="w-6 h-6 mx-auto mb-2 text-ocean" />
                       <div className="text-2xl font-bold text-ocean">
-                        {selectedTrip.currency === 'USD' ? '$' : selectedTrip.currency === 'EUR' ? '€' : selectedTrip.currency + ' '}
-                        {Number(selectedTrip.total_amount).toFixed(2)}
+                        {getCurrencySymbol(selectedTrip.currency)}{Number(selectedTrip.total_amount).toFixed(2)}
                       </div>
                       <div className="text-sm text-muted-foreground">Total Expenses</div>
                     </div>
@@ -235,8 +235,7 @@ export const TripDashboard = () => {
                     <div className="bg-white/50 rounded-lg p-4 text-center">
                       <Plane className="w-6 h-6 mx-auto mb-2 text-mint" />
                       <div className="text-2xl font-bold text-mint">
-                        {selectedTrip.currency === 'USD' ? '$' : selectedTrip.currency === 'EUR' ? '€' : selectedTrip.currency + ' '}
-                        {(Number(selectedTrip.total_amount) / Math.max(selectedTripParticipants.length, 1)).toFixed(2)}
+                        {getCurrencySymbol(selectedTrip.currency)}{(Number(selectedTrip.total_amount) / Math.max(selectedTripParticipants.length, 1)).toFixed(2)}
                       </div>
                       <div className="text-sm text-muted-foreground">Per Person</div>
                     </div>
@@ -252,11 +251,11 @@ export const TripDashboard = () => {
                   </TabsList>
 
                   <TabsContent value="expenses" className="animate-slide-up">
-                    <ExpenseList expenses={formattedExpenses} participants={participantNames} />
+                    <ExpenseList expenses={formattedExpenses} participants={participantNames} currency={selectedTrip.currency} />
                   </TabsContent>
 
                   <TabsContent value="balances" className="animate-slide-up">
-                    <BalancesSummary expenses={formattedExpenses} participants={participantNames} />
+                    <BalancesSummary expenses={formattedExpenses} participants={participantNames} currency={selectedTrip.currency} />
                   </TabsContent>
 
                   <TabsContent value="planning" className="animate-slide-up">

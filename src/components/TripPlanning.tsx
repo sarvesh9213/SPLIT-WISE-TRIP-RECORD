@@ -3,7 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, MapPin, Bed, Camera, Plus, Clock } from 'lucide-react';
+import { Calendar, MapPin, Bed, Camera, Plus, Clock, Trash2 } from 'lucide-react';
+import { getCurrencySymbol } from '@/lib/currency';
 
 interface Trip {
   id: string;
@@ -150,10 +151,52 @@ const getActivityColor = (type: Activity['type']) => {
 };
 
 export const TripPlanning = ({ trip }: TripPlanningProps) => {
-  const [itinerary] = useState(mockItinerary);
+  const [itinerary, setItinerary] = useState(mockItinerary);
   const [accommodations] = useState(mockAccommodations);
 
   const totalDays = Math.ceil((new Date(trip.endDate).getTime() - new Date(trip.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const currencySymbol = getCurrencySymbol(trip.currency);
+
+  const addActivity = (dayId: string) => {
+    // Mock adding activity - in real app, this would open a dialog
+    const newActivity: Activity = {
+      id: `activity-${Date.now()}`,
+      time: '12:00',
+      title: 'New Activity',
+      location: 'To be determined',
+      type: 'activity',
+      description: 'Click to edit details'
+    };
+    
+    setItinerary(prev => prev.map(day => 
+      day.id === dayId 
+        ? { ...day, activities: [...day.activities, newActivity] }
+        : day
+    ));
+  };
+
+  const removeActivity = (dayId: string, activityId: string) => {
+    setItinerary(prev => prev.map(day => 
+      day.id === dayId 
+        ? { ...day, activities: day.activities.filter(activity => activity.id !== activityId) }
+        : day
+    ));
+  };
+
+  const addDay = () => {
+    const lastDay = Math.max(...itinerary.map(d => d.day));
+    const newDayDate = new Date(trip.startDate);
+    newDayDate.setDate(newDayDate.getDate() + lastDay);
+    
+    const newDay: Itinerary = {
+      id: `day-${Date.now()}`,
+      day: lastDay + 1,
+      date: newDayDate.toISOString().split('T')[0],
+      activities: []
+    };
+    
+    setItinerary(prev => [...prev, newDay]);
+  };
 
   return (
     <div className="space-y-6">
@@ -206,7 +249,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                       day: 'numeric' 
                     })}</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" onClick={() => addActivity(day.id)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Activity
                   </Button>
@@ -236,12 +279,22 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                         )}
                       </div>
 
-                      {activity.estimatedCost && (
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-ocean">${activity.estimatedCost}</div>
-                          <div className="text-xs text-muted-foreground">estimated</div>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {activity.estimatedCost && (
+                          <div className="text-right mr-2">
+                            <div className="text-lg font-bold text-ocean">{currencySymbol}{activity.estimatedCost}</div>
+                            <div className="text-xs text-muted-foreground">estimated</div>
+                          </div>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => removeActivity(day.id, activity.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -250,7 +303,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No activities planned for this day</p>
-                    <Button size="sm" className="mt-2" variant="outline">
+                    <Button size="sm" className="mt-2" variant="outline" onClick={() => addActivity(day.id)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Plan Activities
                     </Button>
@@ -264,7 +317,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
               <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground animate-float" />
               <h3 className="text-lg font-semibold mb-2">Plan More Days</h3>
               <p className="text-muted-foreground mb-4">Add itinerary for the remaining {totalDays - itinerary.length} days</p>
-              <Button className="bg-gradient-primary">
+              <Button className="bg-gradient-primary" onClick={addDay}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Day
               </Button>
@@ -286,7 +339,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-ocean">${accommodation.pricePerNight}</div>
+                    <div className="text-2xl font-bold text-ocean">{currencySymbol}{accommodation.pricePerNight}</div>
                     <div className="text-sm text-muted-foreground">per night</div>
                   </div>
                 </div>
@@ -320,7 +373,7 @@ export const TripPlanning = ({ trip }: TripPlanningProps) => {
                         {Math.ceil((new Date(accommodation.checkOut).getTime() - new Date(accommodation.checkIn).getTime()) / (1000 * 60 * 60 * 24))} nights
                       </span>
                       <div className="font-bold text-ocean">
-                        Total: ${accommodation.pricePerNight * Math.ceil((new Date(accommodation.checkOut).getTime() - new Date(accommodation.checkIn).getTime()) / (1000 * 60 * 60 * 24))}
+                        Total: {currencySymbol}{accommodation.pricePerNight * Math.ceil((new Date(accommodation.checkOut).getTime() - new Date(accommodation.checkIn).getTime()) / (1000 * 60 * 60 * 24))}
                       </div>
                     </div>
                   </div>

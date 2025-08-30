@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ArrowUpRight, ArrowDownLeft, CheckCircle } from 'lucide-react';
+import { getCurrencySymbol } from '@/lib/currency';
 
 interface Expense {
   id: string;
@@ -19,6 +20,7 @@ interface Expense {
 interface BalancesSummaryProps {
   expenses: Expense[];
   participants: string[];
+  currency?: string;
 }
 
 interface Balance {
@@ -32,8 +34,9 @@ const getInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
-const generateWhatsAppLink = (debtor: string, creditor: string, amount: number) => {
-  const message = `Hi ${debtor}! 💰\n\nJust a friendly reminder that you owe me $${amount.toFixed(2)} from our recent trip expenses.\n\nCould you please settle this when you get a chance? Thanks! 😊`;
+const generateWhatsAppLink = (debtor: string, creditor: string, amount: number, currency: string) => {
+  const currencySymbol = getCurrencySymbol(currency);
+  const message = `Hi ${debtor}! 💰\n\nJust a friendly reminder that you owe me ${currencySymbol}${amount.toFixed(2)} from our recent trip expenses.\n\nCould you please settle this when you get a chance? Thanks! 😊`;
   const encodedMessage = encodeURIComponent(message);
   const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
   
@@ -41,7 +44,7 @@ const generateWhatsAppLink = (debtor: string, creditor: string, amount: number) 
   window.open(whatsappUrl, '_blank');
 };
 
-export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps) => {
+export const BalancesSummary = ({ expenses, participants, currency = 'USD' }: BalancesSummaryProps) => {
   // Calculate balances
   const calculateBalances = (): Balance[] => {
     const balances: Record<string, Balance> = {};
@@ -106,6 +109,7 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
 
   const balances = calculateBalances();
   const totalOwed = balances.reduce((sum, balance) => sum + Math.max(0, -balance.balance), 0);
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <div className="space-y-6">
@@ -113,11 +117,11 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
       <Card className="p-6 bg-gradient-card">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-2xl font-bold text-ocean">${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}</div>
+            <div className="text-2xl font-bold text-ocean">{currencySymbol}{expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}</div>
             <div className="text-sm text-muted-foreground">Total Spent</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-sunset">${totalOwed.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-sunset">{currencySymbol}{totalOwed.toFixed(2)}</div>
             <div className="text-sm text-muted-foreground">Total Owed</div>
           </div>
           <div>
@@ -149,12 +153,12 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
                     ) : balance.balance > 0 ? (
                       <Badge className="bg-mint text-white">
                         <ArrowDownLeft className="w-3 h-3 mr-1" />
-                        Gets Back ${balance.balance.toFixed(2)}
+                        Gets Back {currencySymbol}{balance.balance.toFixed(2)}
                       </Badge>
                     ) : (
                       <Badge className="bg-coral text-white">
                         <ArrowUpRight className="w-3 h-3 mr-1" />
-                        Owes ${Math.abs(balance.balance).toFixed(2)}
+                        Owes {currencySymbol}{Math.abs(balance.balance).toFixed(2)}
                       </Badge>
                     )}
                   </div>
@@ -177,11 +181,11 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
                       <span className="text-sm">{debt.to}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-red-600">${debt.amount.toFixed(2)}</span>
+                      <span className="font-semibold text-red-600">{currencySymbol}{debt.amount.toFixed(2)}</span>
                       <Button 
                         size="sm" 
                         className="h-6 text-xs bg-gradient-primary"
-                        onClick={() => generateWhatsAppLink(balance.person, debt.to, debt.amount)}
+                        onClick={() => generateWhatsAppLink(balance.person, debt.to, debt.amount, currency)}
                       >
                         Request
                       </Button>
@@ -205,7 +209,7 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
                       </Avatar>
                       <span className="text-sm">{credit.from}</span>
                     </div>
-                    <span className="font-semibold text-green-600">${credit.amount.toFixed(2)}</span>
+                    <span className="font-semibold text-green-600">{currencySymbol}{credit.amount.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -240,7 +244,7 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-ocean">${debt.amount.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-ocean">{currencySymbol}{debt.amount.toFixed(2)}</span>
                     <Button size="sm" className="bg-gradient-primary">
                       Record Payment
                     </Button>

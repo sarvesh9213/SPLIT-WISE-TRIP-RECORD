@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CalendarDays, Users, DollarSign } from 'lucide-react';
+import { getCurrencySymbol } from '@/lib/currency';
 
 interface Expense {
   id: string;
@@ -18,6 +19,7 @@ interface Expense {
 interface ExpenseListProps {
   expenses: Expense[];
   participants: string[];
+  currency?: string;
 }
 
 const getCategoryColor = (category: string) => {
@@ -36,7 +38,7 @@ const getInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
-export const ExpenseList = ({ expenses, participants }: ExpenseListProps) => {
+export const ExpenseList = ({ expenses, participants, currency = 'USD' }: ExpenseListProps) => {
   const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   if (expenses.length === 0) {
@@ -76,9 +78,9 @@ export const ExpenseList = ({ expenses, participants }: ExpenseListProps) => {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-ocean">${expense.amount.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-ocean">{getCurrencySymbol(currency)}{expense.amount.toFixed(2)}</div>
               <div className="text-sm text-muted-foreground">
-                ${(expense.amount / expense.splitBetween.length).toFixed(2)} per person
+                {getCurrencySymbol(currency)}{(expense.amount / expense.splitBetween.length).toFixed(2)} per person
               </div>
             </div>
           </div>
