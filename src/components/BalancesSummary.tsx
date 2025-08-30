@@ -118,23 +118,6 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD', trip
 
   const sendPaymentRequest = async (debtorName: string, creditorName: string, amount: number) => {
     try {
-      // Find the debtor's email from participants
-      const participants = await supabase
-        .from('participants')
-        .select('email')
-        .eq('trip_id', tripId)
-        .eq('name', debtorName)
-        .single();
-
-      if (!participants.data?.email) {
-        toast({
-          title: "No email found",
-          description: `No email address found for ${debtorName}. Please add their email to send requests.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
       toast({
         title: "Sending request...",
         description: "Please wait while we send the payment request email.",
@@ -142,20 +125,32 @@ export const BalancesSummary = ({ expenses, participants, currency = 'USD', trip
 
       const { data, error } = await supabase.functions.invoke('send-expense-request', {
         body: {
-          recipientEmail: participants.data.email,
+          tripId,
           tripName: tripName || 'Trip',
-          amount: `${currencySymbol}${amount.toFixed(2)}`,
-          fromUser: creditorName
+          currency,
+          debtorName,
+          creditorName,
+          amount
         }
       });
 
       if (error) {
         console.error('Error sending payment request:', error);
-        toast({
-          title: "Failed to send request",
-          description: error.message || "Could not send payment request email.",
-          variant: "destructive",
-        });
+        
+        // Check if it's a user not found error
+        if (error.context?.userNotFound) {
+          toast({
+            title: "User not found",
+            description: `${debtorName} hasn't signed up yet or doesn't have an email in the system. Please ask them to sign up or add their email to the trip.`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Failed to send request",
+            description: error.message || "Could not send payment request email.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
