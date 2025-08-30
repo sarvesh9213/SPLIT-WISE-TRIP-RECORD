@@ -26,6 +26,7 @@ const currencies = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
   { code: 'EUR', symbol: '€', name: 'Euro' },
   { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
   { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
   { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
   { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' }
@@ -186,8 +187,24 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
           {/* Currency */}
           <div className="space-y-2">
             <Label>Currency</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {currencies.slice(0, 4).map((curr) => (
+                <Button
+                  key={curr.code}
+                  type="button"
+                  variant={currency === curr.code ? "default" : "outline"}
+                  className={`h-12 flex flex-col gap-1 ${
+                    currency === curr.code ? 'bg-gradient-primary' : ''
+                  }`}
+                  onClick={() => setCurrency(curr.code)}
+                >
+                  <span className="text-lg">{curr.symbol}</span>
+                  <span className="text-xs">{curr.code}</span>
+                </Button>
+              ))}
+            </div>
             <div className="grid grid-cols-3 gap-2">
-              {currencies.map((curr) => (
+              {currencies.slice(4).map((curr) => (
                 <Button
                   key={curr.code}
                   type="button"

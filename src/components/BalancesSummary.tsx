@@ -32,6 +32,15 @@ const getInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
+const generateWhatsAppLink = (debtor: string, creditor: string, amount: number) => {
+  const message = `Hi ${debtor}! 💰\n\nJust a friendly reminder that you owe me $${amount.toFixed(2)} from our recent trip expenses.\n\nCould you please settle this when you get a chance? Thanks! 😊`;
+  const encodedMessage = encodeURIComponent(message);
+  const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+  
+  // Open WhatsApp in a new tab
+  window.open(whatsappUrl, '_blank');
+};
+
 export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps) => {
   // Calculate balances
   const calculateBalances = (): Balance[] => {
@@ -169,8 +178,12 @@ export const BalancesSummary = ({ expenses, participants }: BalancesSummaryProps
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-red-600">${debt.amount.toFixed(2)}</span>
-                      <Button size="sm" className="h-6 text-xs bg-gradient-primary">
-                        Settle
+                      <Button 
+                        size="sm" 
+                        className="h-6 text-xs bg-gradient-primary"
+                        onClick={() => generateWhatsAppLink(balance.person, debt.to, debt.amount)}
+                      >
+                        Request
                       </Button>
                     </div>
                   </div>
