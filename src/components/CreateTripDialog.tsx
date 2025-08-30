@@ -44,6 +44,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
   const [currency, setCurrency] = useState('USD');
   const [participants, setParticipants] = useState<string[]>(['You']);
   const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipantEmail, setNewParticipantEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
@@ -54,6 +55,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
     setCurrency('USD');
     setParticipants(['You']);
     setNewParticipant('');
+    setNewParticipantEmail('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,6 +88,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
     if (newParticipant.trim() && !participants.includes(newParticipant.trim())) {
       setParticipants([...participants, newParticipant.trim()]);
       setNewParticipant('');
+      setNewParticipantEmail('');
     }
   };
 
@@ -270,6 +273,8 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
                 <Input
                   placeholder="Email address (e.g., john@example.com)"
                   type="email"
+                  value={newParticipantEmail}
+                  onChange={(e) => setNewParticipantEmail(e.target.value)}
                   className="flex-1"
                 />
                 <Button
