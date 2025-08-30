@@ -227,8 +227,7 @@ export const CreateTripDialog = ({ open, onOpenChange, onAddTrip }: CreateTripDi
           {/* Participants */}
           <div className="space-y-2">
             <Label>Trip Participants</Label>
-            <p className="text-sm text-muted-foreground"
-            </p>
+      
             
             {/* Current Participants */}
             <div className="space-y-2 max-h-32 overflow-y-auto">
