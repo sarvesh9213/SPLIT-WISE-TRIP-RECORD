@@ -1,4 +1,4 @@
-import { TripDashboard } from '@/components/TripDashboard';
+import { TripDashboard } from '@/components/TripDashboardNew';
 import AuthGuard from '@/components/AuthGuard';
 
 const Index = () => {
