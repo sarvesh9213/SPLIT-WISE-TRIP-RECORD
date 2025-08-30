@@ -10,12 +10,13 @@ import { CreateTripDialog } from './CreateTripDialog';
 import { TripCard } from './TripCard';
 import { useTrips, Trip } from '@/hooks/useTrips';
 import { useAuth } from '@/contexts/AuthContext';
+import { LogOut } from 'lucide-react';
 
 export const TripDashboard = () => {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [showCreateExpense, setShowCreateExpense] = useState(false);
   const [showCreateTrip, setShowCreateTrip] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { 
     trips, 
     participants, 
@@ -29,10 +30,15 @@ export const TripDashboard = () => {
     createDemoData 
   } = useTrips();
 
-  // Create demo data for new users
+  // Create demo data for new users only on first login
   useEffect(() => {
     if (user && trips.length === 0 && !loading) {
-      createDemoData();
+      // Check if user has ever had demo data created
+      const hasCreatedDemo = localStorage.getItem(`demo_created_${user.id}`);
+      if (!hasCreatedDemo) {
+        createDemoData();
+        localStorage.setItem(`demo_created_${user.id}`, 'true');
+      }
     }
   }, [user, trips.length, loading]);
 
@@ -137,13 +143,22 @@ export const TripDashboard = () => {
               <h1 className="text-3xl font-bold mb-2">TripSplit</h1>
               <p className="text-primary-foreground/80">Track expenses and plan your perfect trip</p>
             </div>
-            <Button 
-              onClick={() => setShowCreateTrip(true)}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Trip
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => setShowCreateTrip(true)}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Trip
+              </Button>
+              <Button 
+                onClick={signOut}
+                variant="ghost"
+                className="text-white hover:bg-white/20"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -151,24 +166,26 @@ export const TripDashboard = () => {
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Trip Selector */}
-          <div className="lg:col-span-1">
-            <h2 className="text-xl font-semibold mb-4">Your Trips</h2>
-            <div className="space-y-3">
-              {trips.map((trip) => (
-                <TripCard
-                  key={trip.id}
-                  trip={trip}
-                  isSelected={selectedTrip?.id === trip.id}
-                  participantCount={participants[trip.id]?.length || 0}
-                  onSelect={() => handleTripSelect(trip)}
-                  onDelete={() => handleTripDelete(trip.id)}
-                />
-              ))}
+          {trips.length > 0 && (
+            <div className="lg:col-span-1">
+              <h2 className="text-xl font-semibold mb-4">Your Trips</h2>
+              <div className="space-y-3">
+                {trips.map((trip) => (
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    isSelected={selectedTrip?.id === trip.id}
+                    participantCount={participants[trip.id]?.length || 0}
+                    onSelect={() => handleTripSelect(trip)}
+                    onDelete={() => handleTripDelete(trip.id)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className={trips.length > 0 ? "lg:col-span-3" : "lg:col-span-4"}>
             {selectedTrip ? (
               <>
                 {/* Trip Header */}
@@ -257,14 +274,20 @@ export const TripDashboard = () => {
                 </Tabs>
               </>
             ) : (
-              <div className="text-center py-16">
-                <Plane className="w-16 h-16 mx-auto mb-4 text-muted-foreground animate-float" />
-                <h3 className="text-xl font-semibold mb-2">No Trips Yet</h3>
-                <p className="text-muted-foreground mb-4">Create your first trip to start tracking expenses</p>
-                <Button onClick={() => setShowCreateTrip(true)} className="bg-gradient-primary">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Trip
-                </Button>
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center max-w-md mx-auto">
+                  <div className="text-6xl mb-6">✈️</div>
+                  <h3 className="text-2xl font-semibold mb-3 text-foreground">No trips yet</h3>
+                  <p className="text-muted-foreground mb-8 text-lg">Plan your first trip and start tracking expenses with friends!</p>
+                  <Button 
+                    onClick={() => setShowCreateTrip(true)} 
+                    className="bg-gradient-primary hover:shadow-glow transition-all duration-300 text-lg px-8 py-3"
+                    size="lg"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    New Trip
+                  </Button>
+                </div>
               </div>
             )}
           </div>
